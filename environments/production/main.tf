@@ -10,5 +10,19 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.region
+  region = var.region
+}
+
+module "common" {
+  source      = "../../modules/common"
+  environment = local.environment
+}
+
+module "backend" {
+  source                      = "../../modules/backend"
+  environment                 = local.environment
+  app_name                    = "backend"
+  ecs_task_execution_role_arn = module.common.ecs_task_execution_role_arn
+  subnet_ids                  = module.common.public_subnet_ids
+  security_group_id           = module.common.app_security_group_id
 }
