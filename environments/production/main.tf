@@ -20,6 +20,7 @@ module "common" {
 
 module "backend" {
   source                      = "../../modules/backend"
+  region                      = var.region
   environment                 = local.environment
   app_name                    = "backend"
   ecs_task_execution_role_arn = module.common.ecs_task_execution_role_arn

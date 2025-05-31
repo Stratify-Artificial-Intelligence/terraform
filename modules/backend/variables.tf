@@ -1,3 +1,7 @@
+variable "region" {
+  type        = string
+  description = "The default region where project and resources should reside"
+}
 variable "environment" {
   type        = string
   description = "Environment name."
