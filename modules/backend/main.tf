@@ -23,6 +23,14 @@ resource "aws_ecs_task_definition" "app" {
         hostPort      = 80
         protocol      = "tcp"
       }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/${var.environment}-${var.app_name}"
+          awslogs-region        = var.region
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }
@@ -39,4 +47,9 @@ resource "aws_ecs_service" "app" {
     assign_public_ip = true
     security_groups = [var.security_group_id]
   }
+}
+
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/${var.environment}-${var.app_name}"
+  retention_in_days = 7
 }
