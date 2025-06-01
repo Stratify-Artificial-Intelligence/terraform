@@ -22,3 +22,7 @@ variable "security_group_id" {
   type        = string
   description = "Security group ID for the ECS service."
 }
+variable "vpc_id" {
+  type        = string
+  description = "The ID of the VPC where the ECS service is deployed."
+}

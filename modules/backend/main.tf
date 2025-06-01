@@ -102,11 +102,18 @@ resource "aws_ecs_service" "app" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+  depends_on      = [aws_lb_listener.app_listener]
 
   network_configuration {
     subnets          = var.subnet_ids
     assign_public_ip = true
     security_groups  = [var.security_group_id]
+  }
+
+  load_balancer {
+    container_name   = var.app_name
+    container_port   = 80
+    target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
 
@@ -139,3 +146,79 @@ resource "aws_secretsmanager_secret" "perplexity_api_key" {
 resource "aws_secretsmanager_secret" "pinecone_api_key" {
   name = "${var.environment}-pinecone-api-key"
 }
+
+# Load balancer
+resource "aws_lb" "app_alb" {
+  name               = "${var.environment}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  subnets            = var.subnet_ids
+  security_groups    = [var.security_group_id]
+}
+
+resource "aws_lb_target_group" "app_tg" {
+  name     = "${var.environment}-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200-399"
+  }
+}
+
+resource "aws_lb_listener" "app_listener" {
+  load_balancer_arn = aws_lb.app_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_tg.arn
+  }
+}
+
+data "aws_route53_zone" "veyrai_domain" {
+  name         = "veyrai.com"
+  private_zone = false
+}
+
+resource "aws_route53_record" "backend" {
+  zone_id = data.aws_route53_zone.veyrai_domain.zone_id
+  name    = "backend.veyrai.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.app_alb.dns_name
+    zone_id                = aws_lb.app_alb.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_acm_certificate" "cert" {
+  domain_name       = "backend.veyrai.com"
+  validation_method = "DNS"
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+resource "aws_lb_listener" "https_listener" {
+  load_balancer_arn = aws_lb.app_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.cert.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_tg.arn
+  }
+}
+
