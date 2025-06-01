@@ -17,6 +17,26 @@ resource "aws_iam_role_policy_attachment" "ecs_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_iam_role_policy" "ecs_secrets_access_all" {
+  name = "${var.environment}-ecs-secrets-access-all"
+  role = aws_iam_role.ecs_task_execution_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        # ToDo (pduran): Restrict this to specific secrets
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 resource "aws_security_group" "app_sg" {
   name        = "${var.environment}-sg"
   description = "Allow HTTP"
