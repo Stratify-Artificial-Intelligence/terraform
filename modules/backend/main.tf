@@ -78,6 +78,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "PINECONE_API_KEY"
           valueFrom = aws_secretsmanager_secret.pinecone_api_key.arn
+        },
+        {
+          name      = "STRIPE_API_KEY"
+          valueFrom = aws_secretsmanager_secret.stripe_api_key.arn
         }
       ],
       logConfiguration = {
@@ -143,6 +147,10 @@ resource "aws_secretsmanager_secret" "pinecone_api_key" {
   name = "${var.environment}-pinecone-api-key"
 }
 
+resource "aws_secretsmanager_secret" "stripe_api_key" {
+  name = "${var.environment}-stripe-api-key"
+}
+
 # Load balancer
 resource "aws_lb" "app_alb" {
   name               = "${var.environment}-alb"
@@ -178,14 +186,14 @@ resource "aws_lb_listener" "app_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app_tg_2.arn
   }
-#   default_action {
-#     type = "redirect"
-#     redirect {
-#       port        = "443"
-#       protocol    = "HTTPS"
-#       status_code = "HTTP_301"
-#     }
-#   }
+  #   default_action {
+  #     type = "redirect"
+  #     redirect {
+  #       port        = "443"
+  #       protocol    = "HTTPS"
+  #       status_code = "HTTP_301"
+  #     }
+  #   }
 }
 
 # resource "aws_lb_listener" "app_listener" {
