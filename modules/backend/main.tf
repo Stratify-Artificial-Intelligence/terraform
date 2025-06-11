@@ -166,6 +166,7 @@ resource "aws_lb" "app_alb" {
   load_balancer_type = "application"
   subnets            = var.subnet_ids
   security_groups    = [var.security_group_id]
+  idle_timeout       = 900
 }
 
 resource "aws_lb_target_group" "app_tg_2" {
@@ -225,11 +226,11 @@ resource "aws_route53_record" "cert_validation" {
       record = dvo.resource_record_value
     }
   }
-  zone_id = data.aws_route53_zone.veyrai_domain.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.record]
-  ttl     = 60
+  zone_id    = data.aws_route53_zone.veyrai_domain.zone_id
+  name       = each.value.name
+  type       = each.value.type
+  records    = [each.value.record]
+  ttl        = 60
   depends_on = [aws_acm_certificate.cert]
 }
 
