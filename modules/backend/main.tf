@@ -82,6 +82,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "STRIPE_API_KEY"
           valueFrom = aws_secretsmanager_secret.stripe_api_key.arn
+        },
+        {
+          name      = "STRIPE_WEBHOOK_SECRET"
+          valueFrom = aws_secretsmanager_secret.stripe_webhook_secret.arn
         }
       ],
       logConfiguration = {
@@ -149,6 +153,10 @@ resource "aws_secretsmanager_secret" "pinecone_api_key" {
 
 resource "aws_secretsmanager_secret" "stripe_api_key" {
   name = "${var.environment}-stripe-api-key"
+}
+
+resource "aws_secretsmanager_secret" "stripe_webhook_secret" {
+  name = "${var.environment}-stripe-webhook-secret"
 }
 
 # Load balancer
