@@ -64,6 +64,10 @@ resource "aws_ecs_task_definition" "app" {
           valueFrom = aws_secretsmanager_secret.firebase_auth_private_key.arn
         },
         {
+          name      = "FIREBASE_AUTH_API_KEY"
+          valueFrom = aws_secretsmanager_secret.firebase_auth_api_key.arn
+        },
+        {
           name      = "OPEN_AI_API_KEY"
           valueFrom = aws_secretsmanager_secret.open_ai_api_key.arn
         },
@@ -137,6 +141,10 @@ resource "aws_secretsmanager_secret" "postgres_password" {
 
 resource "aws_secretsmanager_secret" "firebase_auth_private_key" {
   name = "${var.environment}-firebase-auth-private-key"
+}
+
+resource "aws_secretsmanager_secret" "firebase_auth_api_key" {
+  name = "${var.environment}-firebase-auth-api-key"
 }
 
 resource "aws_secretsmanager_secret" "open_ai_api_key" {
