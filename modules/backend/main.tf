@@ -13,6 +13,7 @@ resource "aws_ecs_task_definition" "app" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = var.ecs_task_execution_role_arn
+  task_role_arn            = var.ecs_task_execution_role_arn
   container_definitions = jsonencode([
     {
       name  = var.app_name
@@ -40,6 +41,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "POSTGRES_DB"
           value = "defaultdb"
+        },
+        {
+          name  = "STORAGE_BUCKET_NAME"
+          value = aws_s3_bucket.app_bucket.bucket
+        },
+        {
+          name  = "STORAGE_REGION"
+          value = var.region
         },
         {
           name  = "OPEN_AI_EMBEDDING_MODEL_NAME"
@@ -174,6 +183,43 @@ resource "aws_secretsmanager_secret" "stripe_api_key" {
 resource "aws_secretsmanager_secret" "stripe_webhook_secret" {
   name = "${var.environment}-stripe-webhook-secret"
 }
+
+# Storage
+resource "aws_s3_bucket" "app_bucket" {
+  bucket        = "${var.environment}-${var.app_name}-bucket-veyrai"
+  force_destroy = true
+
+  tags = {
+    Environment = var.environment
+    Name        = "${var.environment}-${var.app_name}-bucket"
+  }
+}
+
+# resource "aws_s3_bucket_policy" "public_read" {
+#   bucket = aws_s3_bucket.app_bucket.id
+#
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [
+#       {
+#         Sid       = "PublicReadGetObject",
+#         Effect    = "Allow",
+#         Principal = "*",
+#         Action    = "s3:GetObject",
+#         Resource  = "arn:aws:s3:::${aws_s3_bucket.app_bucket.bucket}/*"
+#       }
+#     ]
+#   })
+# }
+#
+# resource "aws_s3_bucket_public_access_block" "app_bucket_block" {
+#   bucket = aws_s3_bucket.app_bucket.id
+#
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
 
 # Load balancer
 resource "aws_lb" "app_alb" {
