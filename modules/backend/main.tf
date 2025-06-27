@@ -78,11 +78,11 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name      = "STORAGE_ACCESS_KEY_ID"
-          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:AWS_ACCESS_KEY_ID"
+          valueFrom = aws_secretsmanager_secret.aws_access_key_id.arn
         },
         {
           name      = "STORAGE_SECRET_ACCESS_KEY"
-          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:AWS_SECRET_ACCESS_KEY"
+          valueFrom = aws_secretsmanager_secret.aws_secret_access_key.arn
         },
         {
           name      = "OPEN_AI_API_KEY"
@@ -192,16 +192,22 @@ resource "aws_secretsmanager_secret" "stripe_webhook_secret" {
   name = "${var.environment}-stripe-webhook-secret"
 }
 
-resource "aws_secretsmanager_secret" "aws_credentials" {
-  name = "${var.environment}-aws-credentials"
+resource "aws_secretsmanager_secret" "aws_access_key_id" {
+  name = "${var.environment}-aws-access-key-id"
 }
 
-resource "aws_secretsmanager_secret_version" "aws_creds_version" {
-  secret_id     = aws_secretsmanager_secret.aws_credentials.id
-  secret_string = jsonencode({
-    AWS_ACCESS_KEY_ID     = aws_iam_access_key.backend_user_key.id
-    AWS_SECRET_ACCESS_KEY = aws_iam_access_key.backend_user_key.secret
-  })
+resource "aws_secretsmanager_secret_version" "aws_access_key_version" {
+  secret_id     = aws_secretsmanager_secret.aws_access_key_id.id
+  secret_string = aws_iam_access_key.backend_user_key.id
+}
+
+resource "aws_secretsmanager_secret" "aws_secret_access_key" {
+  name = "${var.environment}-aws-secret-access-key"
+}
+
+resource "aws_secretsmanager_secret_version" "aws_secret_access_key_version" {
+  secret_id     = aws_secretsmanager_secret.aws_secret_access_key.id
+  secret_string = aws_iam_access_key.backend_user_key.secret
 }
 
 # Storage
