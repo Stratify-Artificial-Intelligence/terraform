@@ -77,6 +77,14 @@ resource "aws_ecs_task_definition" "app" {
           valueFrom = aws_secretsmanager_secret.firebase_auth_api_key.arn
         },
         {
+          name      = "STORAGE_ACCESS_KEY_ID"
+          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:AWS_ACCESS_KEY_ID"
+        },
+        {
+          name      = "STORAGE_SECRET_ACCESS_KEY"
+          valueFrom = "${aws_secretsmanager_secret.aws_credentials.arn}:AWS_SECRET_ACCESS_KEY"
+        },
+        {
           name      = "OPEN_AI_API_KEY"
           valueFrom = aws_secretsmanager_secret.open_ai_api_key.arn
         },
@@ -184,6 +192,18 @@ resource "aws_secretsmanager_secret" "stripe_webhook_secret" {
   name = "${var.environment}-stripe-webhook-secret"
 }
 
+resource "aws_secretsmanager_secret" "aws_credentials" {
+  name = "${var.environment}-aws-credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "aws_creds_version" {
+  secret_id     = aws_secretsmanager_secret.aws_credentials.id
+  secret_string = jsonencode({
+    AWS_ACCESS_KEY_ID     = aws_iam_access_key.backend_user_key.id
+    AWS_SECRET_ACCESS_KEY = aws_iam_access_key.backend_user_key.secret
+  })
+}
+
 # Storage
 resource "aws_s3_bucket" "app_bucket" {
   bucket        = "${var.environment}-${var.app_name}-bucket-veyrai"
@@ -195,31 +215,52 @@ resource "aws_s3_bucket" "app_bucket" {
   }
 }
 
-# resource "aws_s3_bucket_policy" "public_read" {
-#   bucket = aws_s3_bucket.app_bucket.id
-#
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Sid       = "PublicReadGetObject",
-#         Effect    = "Allow",
-#         Principal = "*",
-#         Action    = "s3:GetObject",
-#         Resource  = "arn:aws:s3:::${aws_s3_bucket.app_bucket.bucket}/*"
-#       }
-#     ]
-#   })
-# }
-#
-# resource "aws_s3_bucket_public_access_block" "app_bucket_block" {
-#   bucket = aws_s3_bucket.app_bucket.id
-#
-#   block_public_acls       = false
-#   block_public_policy     = false
-#   ignore_public_acls      = false
-#   restrict_public_buckets = false
-# }
+resource "aws_s3_bucket_ownership_controls" "app_bucket_acl" {
+  bucket = aws_s3_bucket.app_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_policy" "public_read" {
+  bucket = aws_s3_bucket.app_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject",
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "s3:GetObject",
+        Resource  = "arn:aws:s3:::${aws_s3_bucket.app_bucket.bucket}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_s3_bucket_public_access_block" "app_bucket_block" {
+  bucket = aws_s3_bucket.app_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_iam_user" "app_storage_user" {
+  name = "${var.environment}-backend-user"
+}
+
+resource "aws_iam_user_policy_attachment" "backend_s3_access" {
+  user       = aws_iam_user.app_storage_user.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_access_key" "backend_user_key" {
+  user = aws_iam_user.app_storage_user.name
+}
 
 # Load balancer
 resource "aws_lb" "app_alb" {
