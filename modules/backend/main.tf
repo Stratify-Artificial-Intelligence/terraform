@@ -1,3 +1,6 @@
+# =============================================================
+# ================ ECR and ECS Infrastructure =================
+# =============================================================
 resource "aws_ecr_repository" "app" {
   name = "${var.environment}-${var.app_name}"
 }
@@ -32,15 +35,15 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "POSTGRES_USER"
-          value = "avnadmin"
+          value = aws_db_instance.postgres.username
         },
         {
           name  = "POSTGRES_SERVER"
-          value = "db-veyra-veyra.c.aivencloud.com:22634"
+          value = "${aws_db_instance.postgres.address}:${aws_db_instance.postgres.port}"
         },
         {
           name  = "POSTGRES_DB"
-          value = "defaultdb"
+          value = aws_db_instance.postgres.db_name
         },
         {
           name  = "STORAGE_BUCKET_NAME"
@@ -67,6 +70,7 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "POSTGRES_PASSWORD"
           valueFrom = aws_secretsmanager_secret.postgres_password.arn
+          # valueFrom = aws_db_instance.postgres.password
         },
         {
           name      = "FIREBASE_AUTH_PRIVATE_KEY"
@@ -151,7 +155,9 @@ resource "aws_cloudwatch_log_group" "ecs_logs" {
   retention_in_days = 7
 }
 
-# Secrets
+# =============================================================
+# =================== Secrets Management ======================
+# =============================================================
 resource "aws_secretsmanager_secret" "postgres_password" {
   name = "${var.environment}-postgres-password"
 }
@@ -210,7 +216,9 @@ resource "aws_secretsmanager_secret_version" "aws_secret_access_key_version" {
   secret_string = aws_iam_access_key.backend_user_key.secret
 }
 
-# Storage
+# =============================================================
+# ================== S3 Bucket for Storage ====================
+# =============================================================
 resource "aws_s3_bucket" "app_bucket" {
   bucket        = "${var.environment}-${var.app_name}-bucket-veyrai"
   force_destroy = true
@@ -268,7 +276,9 @@ resource "aws_iam_access_key" "backend_user_key" {
   user = aws_iam_user.app_storage_user.name
 }
 
-# Load balancer
+# =============================================================
+# ============= Load Balancer and ACM Certificate =============
+# =============================================================
 resource "aws_lb" "app_alb" {
   name               = "${var.environment}-alb"
   internal           = false
@@ -366,5 +376,56 @@ resource "aws_lb_listener" "https_listener" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app_tg_2.arn
+  }
+}
+
+# =============================================================
+# ================== RDS PostgreSQL Instance ==================
+# =============================================================
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "${var.environment}-rds-subnet-group"
+  subnet_ids = var.subnet_ids
+
+  tags = {
+    Name = "${var.environment}-rds-subnet-group"
+  }
+}
+
+resource "aws_security_group" "rds_sg" {
+  name        = "${var.environment}-rds-sg"
+  description = "Allow PostgreSQL from ECS"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [var.security_group_id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier             = "${var.environment}-postgres-db"
+  allocated_storage      = 20
+  engine                 = "postgres"
+  engine_version         = "15.12"
+  instance_class         = "db.t3.micro"
+  username               = "admindb"
+  db_name                = "defaultdb"
+  password               = aws_secretsmanager_secret.postgres_password.arn
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  skip_final_snapshot    = true
+  publicly_accessible    = true
+
+  tags = {
+    Name = "${var.environment}-postgres-db"
   }
 }

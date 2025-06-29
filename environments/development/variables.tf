@@ -5,7 +5,7 @@ variable "region" {
 }
 
 variable "backend_domain" {
-    type        = string
-    description = "Domain name for the backend service"
-    default     = "dev-backend.veyrai.com"
+  type        = string
+  description = "Domain name for the backend service"
+  default     = "dev-backend.veyrai.com"
 }
