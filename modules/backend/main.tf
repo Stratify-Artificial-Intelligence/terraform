@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         {
           name  = "DOMAIN"
-          value = "production"
+          value = var.environment
         },
         {
           name  = "POSTGRES_USER"
@@ -317,7 +317,7 @@ data "aws_route53_zone" "veyrai_domain" {
 
 resource "aws_route53_record" "backend" {
   zone_id = data.aws_route53_zone.veyrai_domain.zone_id
-  name    = "backend.veyrai.com"
+  name    = var.domain
   type    = "A"
 
   alias {
@@ -349,7 +349,7 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "backend.veyrai.com"
+  domain_name       = var.domain
   validation_method = "DNS"
   tags = {
     Environment = var.environment
