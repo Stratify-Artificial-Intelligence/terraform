@@ -23,6 +23,7 @@ module "backend" {
   region                      = var.region
   environment                 = local.environment
   app_name                    = "backend"
+  domain                      = var.backend_domain
   ecs_task_execution_role_arn = module.common.ecs_task_execution_role_arn
   subnet_ids                  = module.common.public_subnet_ids
   security_group_id           = module.common.app_security_group_id

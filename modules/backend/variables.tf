@@ -10,6 +10,10 @@ variable "app_name" {
   type        = string
   description = "Name of the application."
 }
+variable "domain" {
+  type        = string
+  description = "Domain name for the backend service."
+}
 variable "ecs_task_execution_role_arn" {
   type        = string
   description = "The ARN of the ECS task execution IAM role."
