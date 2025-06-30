@@ -133,7 +133,7 @@ resource "aws_ecs_service" "app" {
   name            = "${var.environment}-${var.app_name}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
   depends_on      = [aws_lb_listener.app_listener]
 
@@ -154,6 +154,33 @@ resource "aws_cloudwatch_log_group" "ecs_logs" {
   name              = "/ecs/${var.environment}-${var.app_name}"
   retention_in_days = 7
 }
+
+# Scaling Configuration
+resource "aws_appautoscaling_target" "ecs_app" {
+  max_capacity       = 10
+  min_capacity       = 2
+  resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.app.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_app_cpu_policy" {
+  name               = "${var.environment}-${var.app_name}-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_app.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_app.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_app.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value = 60.0
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 60
+  }
+}
+
 
 # =============================================================
 # =================== Secrets Management ======================
