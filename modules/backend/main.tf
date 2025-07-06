@@ -97,6 +97,10 @@ resource "aws_ecs_task_definition" "app" {
           valueFrom = aws_secretsmanager_secret.open_ai_assistant_id.arn
         },
         {
+          name      = "ANTHROPIC_API_KEY"
+          valueFrom = aws_secretsmanager_secret.anthropic_api_key.arn
+        },
+        {
           name      = "OPEN_AI_EMBEDDING_API_KEY"
           valueFrom = aws_secretsmanager_secret.open_ai_embedding_api_key.arn
         },
@@ -203,6 +207,10 @@ resource "aws_secretsmanager_secret" "open_ai_api_key" {
 
 resource "aws_secretsmanager_secret" "open_ai_assistant_id" {
   name = "${var.environment}-open-ai-assistant-id"
+}
+
+resource "aws_secretsmanager_secret" "anthropic_api_key" {
+  name = "${var.environment}-anthropic-api-key"
 }
 
 resource "aws_secretsmanager_secret" "open_ai_embedding_api_key" {
