@@ -137,7 +137,7 @@ resource "aws_ecs_service" "app" {
   name            = "${var.environment}-${var.app_name}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 2
+  desired_count   = 5
   launch_type     = "FARGATE"
   depends_on      = [aws_lb_listener.app_listener]
 
@@ -161,8 +161,8 @@ resource "aws_cloudwatch_log_group" "ecs_logs" {
 
 # Scaling Configuration
 resource "aws_appautoscaling_target" "ecs_app" {
-  max_capacity       = 10
-  min_capacity       = 2
+  max_capacity       = 25
+  min_capacity       = 5
   resource_id        = "service/${aws_ecs_cluster.this.name}/${aws_ecs_service.app.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
