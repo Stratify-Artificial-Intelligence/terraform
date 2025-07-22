@@ -28,4 +28,7 @@ module "backend" {
   subnet_ids                  = module.common.public_subnet_ids
   security_group_id           = module.common.app_security_group_id
   vpc_id                      = module.common.vpc_id
+  external_services = {
+    CHAT_AI_MODEL_PROVIDER = "openai"
+  }
 }
