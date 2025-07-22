@@ -30,3 +30,10 @@ variable "vpc_id" {
   type        = string
   description = "The ID of the VPC where the ECS service is deployed."
 }
+variable "external_services" {
+  type = object(
+    {
+      CHAT_AI_MODEL_PROVIDER = string
+    }
+  )
+}

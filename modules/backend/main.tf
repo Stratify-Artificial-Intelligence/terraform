@@ -34,6 +34,10 @@ resource "aws_ecs_task_definition" "app" {
           value = var.environment
         },
         {
+          name  = "SERVICES_CHAT_AI_MODEL_PROVIDER"
+          value = var.external_services.CHAT_AI_MODEL_PROVIDER
+        },
+        {
           name  = "POSTGRES_USER"
           value = aws_db_instance.postgres.username
         },
