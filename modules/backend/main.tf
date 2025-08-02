@@ -70,7 +70,11 @@ resource "aws_ecs_task_definition" "app" {
           value = "aws"
         },
         {
-          name  = "RAG_HANDLER_ID"
+          name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_STATE_MACHINE_ARN"
+          value = var.region
+        },
+        {
+          name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_REGION"
           value = var.step_function_research_handler_arn != null ? var.step_function_research_handler_arn : ""
         }
       ],
