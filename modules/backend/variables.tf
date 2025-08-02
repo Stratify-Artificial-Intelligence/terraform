@@ -37,3 +37,8 @@ variable "external_services" {
     }
   )
 }
+variable "step_function_research_handler_arn" {
+  type        = string
+  description = "The ARN of the Step Function Research Handler."
+  default     = null
+}

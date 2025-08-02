@@ -68,9 +68,18 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "PINECONE_REGION"
           value = "aws"
+        },
+        {
+          name  = "RAG_HANDLER_ID"
+          value = var.step_function_research_handler_arn != null ? var.step_function_research_handler_arn : ""
         }
       ],
       secrets = [
+        # ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
+        {
+          name      = "SECURITY_SERVICE_USER_TOKEN"
+          valueFrom = aws_secretsmanager_secret.service_user_token.arn
+        },
         {
           name      = "POSTGRES_PASSWORD"
           valueFrom = aws_secretsmanager_secret.postgres_password.arn
@@ -193,6 +202,11 @@ resource "aws_appautoscaling_policy" "ecs_app_cpu_policy" {
 # =============================================================
 # =================== Secrets Management ======================
 # =============================================================
+# ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
+resource "aws_secretsmanager_secret" "service_user_token" {
+  name = "${var.environment}-service-user-token"
+}
+
 resource "aws_secretsmanager_secret" "postgres_password" {
   name = "${var.environment}-postgres-password"
 }
