@@ -121,27 +121,28 @@ resource "aws_sfn_state_machine" "research_status_machine" {
           }
         },
         ResultSelector = {
-          "status.$" = "$.body.status"
+          "status.$" : "$.ResponseBody.status"
         },
+        ResultPath = "$.status",
         Next = "EvaluateStatus"
       },
       EvaluateStatus = {
         Type = "Choice",
         Choices = [
           {
-            Variable     = "$.status",
+            Variable     = "$.status.status",
             StringEquals = "COMPLETED",
             Next         = "StoreResearch"
           },
           {
-            Variable     = "$.status",
+            Variable     = "$.status.status",
             StringEquals = "FAILED",
             Next         = "FailState"
           },
           {
             Or = [
-              { Variable = "$.status", StringEquals = "IN_PROGRESS" },
-              { Variable = "$.status", StringEquals = "CREATED" }
+              { Variable = "$.status.status", StringEquals = "IN_PROGRESS" },
+              { Variable = "$.status.status", StringEquals = "CREATED" }
             ],
             Next = "WaitBeforeRetry"
           }
@@ -176,4 +177,56 @@ resource "aws_sfn_state_machine" "research_status_machine" {
       }
     }
   })
+}
+
+
+# User so that backend can access the step function
+# ToDo (pduran): If more step functions were to be defined, this user should be common
+#  for all of them, or a more generic role should be created.
+resource "aws_iam_user" "step_function_executor" {
+  name = "${var.environment}-step-function-executor"
+}
+
+data "aws_iam_policy_document" "step_function_policy_document" {
+  statement {
+    actions = ["states:StartExecution"]
+    # ToDo (pduran): If more step functions were to be defined, this should be expanded.
+    resources = [aws_sfn_state_machine.research_status_machine.arn]
+    effect    = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "step_function_policy" {
+  name        = "StepFunctionExecutionPolicy"
+  policy      = data.aws_iam_policy_document.step_function_policy_document.json
+  description = "Allows a user to start Step Function execution."
+}
+
+resource "aws_iam_user_policy_attachment" "step_function_attachment" {
+  user       = aws_iam_user.step_function_executor.name
+  policy_arn = aws_iam_policy.step_function_policy.arn
+}
+
+resource "aws_iam_access_key" "step_function_key" {
+  user = aws_iam_user.step_function_executor.name
+}
+
+resource "aws_secretsmanager_secret" "aws_access_key_id" {
+  name        = "${var.environment}-aws-step-function-access-key-id"
+  description = "Access Key ID for the Step Functions user."
+}
+
+resource "aws_secretsmanager_secret_version" "aws_access_key_version" {
+  secret_id     = aws_secretsmanager_secret.aws_access_key_id.id
+  secret_string = aws_iam_access_key.step_function_key.id
+}
+
+resource "aws_secretsmanager_secret" "aws_secret_access_key" {
+  name        = "${var.environment}-aws-step-function-secret-access-key-id"
+  description = "Secret Access Key for the Step Functions user."
+}
+
+resource "aws_secretsmanager_secret_version" "aws_secret_access_key_version" {
+  secret_id     = aws_secretsmanager_secret.aws_secret_access_key.id
+  secret_string = aws_iam_access_key.step_function_key.secret
 }

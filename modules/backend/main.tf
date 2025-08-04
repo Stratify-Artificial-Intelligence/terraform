@@ -66,6 +66,10 @@ resource "aws_ecs_task_definition" "app" {
           value = "https://api.perplexity.ai/chat/completions"
         },
         {
+          name  = "PERPLEXITY_API_URL_ASYNC"
+          value = "https://api.perplexity.ai/async/chat/completions"
+        },
+        {
           name  = "PINECONE_REGION"
           value = "aws"
         },
@@ -136,6 +140,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "STRIPE_WEBHOOK_SECRET"
           valueFrom = aws_secretsmanager_secret.stripe_webhook_secret.arn
+        },
+        {
+          name      = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_ACCESS_KEY_ID"
+          valueFrom = var.step_function_user_access_key_id_arn
+        },
+        {
+          name      = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_SECRET_ACCESS_KEY"
+          valueFrom = var.step_function_user_secret_access_key_arn
         }
       ],
       logConfiguration = {

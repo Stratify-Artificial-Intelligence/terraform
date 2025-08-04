@@ -31,7 +31,9 @@ module "backend" {
   external_services = {
     CHAT_AI_MODEL_PROVIDER = "anthropic"
   }
-  step_function_research_handler_arn = module.step_function_research_handler.arn
+  step_function_research_handler_arn       = module.step_function_research_handler.arn
+  step_function_user_access_key_id_arn     = module.step_function_research_handler.step_function_user_access_key_id_secret_arn
+  step_function_user_secret_access_key_arn = module.step_function_research_handler.step_function_user_secret_access_key_secret_arn
 }
 
 module "step_function_research_handler" {
