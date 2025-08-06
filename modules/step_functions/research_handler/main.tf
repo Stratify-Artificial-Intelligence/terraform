@@ -124,7 +124,7 @@ resource "aws_sfn_state_machine" "research_status_machine" {
           "status.$" : "$.ResponseBody.status"
         },
         ResultPath = "$.status",
-        Next = "EvaluateStatus"
+        Next       = "EvaluateStatus"
       },
       EvaluateStatus = {
         Type = "Choice",
@@ -158,13 +158,12 @@ resource "aws_sfn_state_machine" "research_status_machine" {
         Type     = "Task",
         Resource = "arn:aws:states:::http:invoke",
         Parameters = {
-          "ApiEndpoint" = "https://${var.domain}/researches/store"
-          "Method"      = "POST",
+          "ApiEndpoint.$" = "States.Format('https://${var.domain}/researches/{}/store', $.research_id)"
+          "Method"        = "POST",
           "Authentication" = {
             "ConnectionArn" = aws_cloudwatch_event_connection.step_function_api_connection.arn
           },
           "RequestBody" = {
-            "research_id.$" = "$.research_id"
             "business_id.$" = "$.business_id"
           }
         },
