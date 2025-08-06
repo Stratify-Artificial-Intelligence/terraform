@@ -66,11 +66,28 @@ resource "aws_ecs_task_definition" "app" {
           value = "https://api.perplexity.ai/chat/completions"
         },
         {
+          name  = "PERPLEXITY_API_URL_ASYNC"
+          value = "https://api.perplexity.ai/async/chat/completions"
+        },
+        {
           name  = "PINECONE_REGION"
           value = "aws"
+        },
+        {
+          name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_STATE_MACHINE_ARN"
+          value = var.region
+        },
+        {
+          name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_REGION"
+          value = var.step_function_research_handler_arn != null ? var.step_function_research_handler_arn : ""
         }
       ],
       secrets = [
+        # ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
+        {
+          name      = "SECURITY_SERVICE_USER_TOKEN"
+          valueFrom = aws_secretsmanager_secret.service_user_token.arn
+        },
         {
           name      = "POSTGRES_PASSWORD"
           valueFrom = aws_secretsmanager_secret.postgres_password.arn
@@ -123,6 +140,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "STRIPE_WEBHOOK_SECRET"
           valueFrom = aws_secretsmanager_secret.stripe_webhook_secret.arn
+        },
+        {
+          name      = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_ACCESS_KEY_ID"
+          valueFrom = var.step_function_user_access_key_id_arn
+        },
+        {
+          name      = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_SECRET_ACCESS_KEY"
+          valueFrom = var.step_function_user_secret_access_key_arn
         }
       ],
       logConfiguration = {
@@ -193,6 +218,11 @@ resource "aws_appautoscaling_policy" "ecs_app_cpu_policy" {
 # =============================================================
 # =================== Secrets Management ======================
 # =============================================================
+# ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
+resource "aws_secretsmanager_secret" "service_user_token" {
+  name = "${var.environment}-service-user-token"
+}
+
 resource "aws_secretsmanager_secret" "postgres_password" {
   name = "${var.environment}-postgres-password"
 }

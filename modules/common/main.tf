@@ -41,6 +41,23 @@ resource "aws_iam_role_policy" "ecs_secrets_access_all" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_start_stepfunctions_all" {
+  name = "${var.environment}-ecs-start-stepfunctions-all"
+  role = aws_iam_role.ecs_task_execution_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "states:StartExecution",
+        # ToDo (pduran): Restrict this to specific secrets
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 
 resource "aws_security_group" "app_sg" {
   name        = "${var.environment}-sg"

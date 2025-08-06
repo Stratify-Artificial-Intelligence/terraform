@@ -37,3 +37,18 @@ variable "external_services" {
     }
   )
 }
+variable "step_function_research_handler_arn" {
+  type        = string
+  description = "The ARN of the Step Function Research Handler."
+  default     = null
+}
+variable "step_function_user_access_key_id_arn" {
+  type        = string
+  description = "The ARN of the Secrets Manager secret holding the access key ID for the Step Function user."
+  default     = null
+}
+variable "step_function_user_secret_access_key_arn" {
+  type        = string
+  description = "The ARN of the Secrets Manager secret holding the secret access key for the Step Function user."
+  default     = null
+}
