@@ -2,11 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.16"
+      version = "~> 6.7"
     }
   }
 
-  required_version = ">= 1.2.0"
+  required_version = ">= 1.11.0"
 }
 
 provider "aws" {
@@ -31,4 +31,14 @@ module "backend" {
   external_services = {
     CHAT_AI_MODEL_PROVIDER = "openai"
   }
+  step_function_research_handler_arn       = module.step_function_research_handler.arn
+  step_function_user_access_key_id_arn     = module.step_function_research_handler.step_function_user_access_key_id_secret_arn
+  step_function_user_secret_access_key_arn = module.step_function_research_handler.step_function_user_secret_access_key_secret_arn
+}
+
+module "step_function_research_handler" {
+  source                 = "../../modules/step_functions/research_handler"
+  environment            = local.environment
+  domain                 = var.backend_domain
+  service_user_token_arn = module.backend.service_user_token_arn
 }
