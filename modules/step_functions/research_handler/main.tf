@@ -1,5 +1,5 @@
 resource "aws_iam_role" "step_function_role" {
-  name = "StepFunctionExecutionRole"
+  name = "${var.environment}-step-function-execution-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -15,7 +15,7 @@ resource "aws_iam_role" "step_function_role" {
 }
 
 resource "aws_iam_role_policy" "step_function_policy" {
-  name = "StepFunctionPolicy"
+  name = "${var.environment}-step-function-policy"
   role = aws_iam_role.step_function_role.id
 
   policy = jsonencode({
@@ -196,7 +196,7 @@ data "aws_iam_policy_document" "step_function_policy_document" {
 }
 
 resource "aws_iam_policy" "step_function_policy" {
-  name        = "StepFunctionExecutionPolicy"
+  name        = "${var.environment}-step-function-execution-policy"
   policy      = data.aws_iam_policy_document.step_function_policy_document.json
   description = "Allows a user to start Step Function execution."
 }
