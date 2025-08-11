@@ -75,11 +75,11 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_STATE_MACHINE_ARN"
-          value = var.region
+          value = var.step_function_research_handler_arn != null ? var.step_function_research_handler_arn : ""
         },
         {
           name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_REGION"
-          value = var.step_function_research_handler_arn != null ? var.step_function_research_handler_arn : ""
+          value = var.region
         }
       ],
       secrets = [
