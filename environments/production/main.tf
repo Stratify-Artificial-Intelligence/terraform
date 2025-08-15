@@ -29,7 +29,7 @@ module "backend" {
   security_group_id           = module.common.app_security_group_id
   vpc_id                      = module.common.vpc_id
   external_services = {
-    CHAT_AI_MODEL_PROVIDER = "openai"
+    CHAT_AI_MODEL_PROVIDER = "anthropic"
   }
   step_function_research_handler_arn       = module.step_function_research_handler.arn
   step_function_user_access_key_id_arn     = module.step_function_research_handler.step_function_user_access_key_id_secret_arn
