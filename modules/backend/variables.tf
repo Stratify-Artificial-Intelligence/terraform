@@ -30,6 +30,11 @@ variable "vpc_id" {
   type        = string
   description = "The ID of the VPC where the ECS service is deployed."
 }
+variable "default_instances_count" {
+  type        = number
+  description = "Minimum number of instances for the ECS service."
+  default     = 1
+}
 variable "external_services" {
   type = object(
     {
