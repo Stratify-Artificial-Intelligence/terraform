@@ -51,7 +51,34 @@ resource "aws_iam_role_policy" "ecs_start_stepfunctions_all" {
       {
         Effect = "Allow",
         Action = "states:StartExecution",
-        # ToDo (pduran): Restrict this to specific secrets
+        # ToDo (pduran): Restrict this to specific step functions
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "ecs_handle_scheduler_all" {
+  name = "${var.environment}-ecs-handle-scheduler-all"
+  role = aws_iam_role.ecs_task_execution_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "scheduler:CreateSchedule",
+          "scheduler:DeleteSchedule",
+          "scheduler:GetSchedule"
+        ],
+        Effect = "Allow",
+        # ToDo (pduran): Restrict this to specific resources if possible
+        Resource = "*"
+      },
+      {
+        # Permission to pass the execution role to the scheduler
+        Action   = "iam:PassRole",
+        Effect   = "Allow",
         Resource = "*"
       }
     ]

@@ -57,3 +57,23 @@ variable "step_function_user_secret_access_key_arn" {
   description = "The ARN of the Secrets Manager secret holding the secret access key for the Step Function user."
   default     = null
 }
+variable "eventbridge_scheduler_role_arn" {
+  type        = string
+  description = "The ARN of the EventBridge Scheduler role."
+  default     = null
+}
+variable "eventbridge_user_access_key_id_arn" {
+  type        = string
+  description = "The ARN of the Secrets Manager secret holding the access key ID for the Event Bridge user."
+  default     = null
+}
+variable "eventbridge_user_secret_access_key_arn" {
+  type        = string
+  description = "The ARN of the Secrets Manager secret holding the secret access key for the Event Bridge user."
+  default     = null
+}
+variable "eventbridge_lambda_function_arn" {
+  type        = string
+  description = "The ARN of the Lambda function that EventBridge Scheduler will invoke."
+  default     = null
+}

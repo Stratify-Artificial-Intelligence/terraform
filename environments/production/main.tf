@@ -35,6 +35,9 @@ module "backend" {
   step_function_research_handler_arn       = module.step_function_research_handler.arn
   step_function_user_access_key_id_arn     = module.step_function_research_handler.step_function_user_access_key_id_secret_arn
   step_function_user_secret_access_key_arn = module.step_function_research_handler.step_function_user_secret_access_key_secret_arn
+  eventbridge_scheduler_role_arn           = module.eventbridge_scheduler.eventbridge_scheduler_role_arn
+  eventbridge_user_access_key_id_arn       = module.eventbridge_scheduler.eventbridge_user_access_key_id_secret_arn
+  eventbridge_user_secret_access_key_arn   = module.eventbridge_scheduler.eventbridge_user_secret_access_key_secret_arn
 }
 
 module "step_function_research_handler" {
@@ -42,4 +45,9 @@ module "step_function_research_handler" {
   environment            = local.environment
   domain                 = var.backend_domain
   service_user_token_arn = module.backend.service_user_token_arn
+}
+
+module "eventbridge_scheduler" {
+  source      = "../../modules/eventbridge"
+  environment = local.environment
 }
