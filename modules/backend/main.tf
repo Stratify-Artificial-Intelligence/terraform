@@ -100,6 +100,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_LAMBDA_FUNCTION_ARN"
           value = var.eventbridge_lambda_function_arn != null ? var.eventbridge_lambda_function_arn : ""
+        },
+        {
+          name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_GROUP_NAME"
+          value = "${var.environment}_deep_research_business"
         }
       ],
       secrets = [
