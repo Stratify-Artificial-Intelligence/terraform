@@ -27,8 +27,8 @@ module "backend" {
   ecs_task_execution_role_arn = module.common.ecs_task_execution_role_arn
   subnet_ids                  = module.common.public_subnet_ids
   security_group_id           = module.common.app_security_group_id
-  default_instances_count     = 1
   vpc_id                      = module.common.vpc_id
+  default_instances_count     = 1
   external_services = {
     CHAT_AI_MODEL_PROVIDER = "anthropic"
   }
@@ -38,7 +38,7 @@ module "backend" {
   eventbridge_scheduler_role_arn           = module.eventbridge_business_research_scheduler.eventbridge_scheduler_role_arn
   eventbridge_user_access_key_id_arn       = module.eventbridge_business_research_scheduler.eventbridge_user_access_key_id_secret_arn
   eventbridge_user_secret_access_key_arn   = module.eventbridge_business_research_scheduler.eventbridge_user_secret_access_key_secret_arn
-  eventbridge_lambda_function_arn = module.eventbridge_business_research_scheduler.eventbridge_lambda_function_arn
+  eventbridge_lambda_function_arn          = module.eventbridge_business_research_scheduler.eventbridge_lambda_function_arn
 }
 
 module "step_function_research_handler" {
@@ -49,8 +49,8 @@ module "step_function_research_handler" {
 }
 
 module "eventbridge_business_research_scheduler" {
-  source      = "../../modules/eventbridge/business_research_scheduler"
-  environment = local.environment
-  domain = var.backend_domain
+  source                 = "../../modules/eventbridge/business_research_scheduler"
+  environment            = local.environment
+  domain                 = var.backend_domain
   service_user_token_arn = module.backend.service_user_token_arn
 }

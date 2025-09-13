@@ -75,6 +75,10 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "PINECONE_REGION"
+          value = "us-east-1"
+        },
+        {
+          name  = "PINECONE_CLOUD"
           value = "aws"
         },
         {
@@ -94,16 +98,14 @@ resource "aws_ecs_task_definition" "app" {
           value = var.eventbridge_scheduler_role_arn != null ? var.eventbridge_scheduler_role_arn : ""
         },
         {
-          name = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_LAMBDA_FUNCTION_ARN"
+          name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_LAMBDA_FUNCTION_ARN"
           value = var.eventbridge_lambda_function_arn != null ? var.eventbridge_lambda_function_arn : ""
         }
       ],
       secrets = [
         # ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
         {
-          # ToDo (pduran)
           name      = "GENERAL_SERVICE_USER_TOKEN"
-          # name      = "SECURITY_SERVICE_USER_TOKEN"
           valueFrom = aws_secretsmanager_secret.service_user_token.arn
         },
         {

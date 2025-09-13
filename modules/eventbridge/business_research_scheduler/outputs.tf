@@ -15,6 +15,6 @@ output "eventbridge_user_secret_access_key_secret_arn" {
 }
 
 output "eventbridge_lambda_function_arn" {
-    description = "ARN of the Lambda function that EventBridge Scheduler will invoke."
-    value       = aws_lambda_function.business_research_lambda.arn
+  description = "ARN of the Lambda function that EventBridge Scheduler will invoke."
+  value       = aws_lambda_function.business_research_lambda.arn
 }

@@ -20,7 +20,10 @@ resource "aws_iam_policy" "eventbridge_rule_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Action = "scheduler:CreateSchedule",
+        Action = [
+          "scheduler:CreateSchedule",
+          "scheduler:DeleteSchedule"
+        ],
         Effect = "Allow",
         # ToDo (pduran): Restrict this to specific schedules
         Resource = "*"
@@ -102,7 +105,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # 3. Custom policy to allow reading the specific secret from Secrets Manager
 resource "aws_iam_policy" "get_secret_policy" {
-  name   = "${var.environment}-business-research-lambda-role-get-secret-policy"
+  name = "${var.environment}-business-research-lambda-role-get-secret-policy"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -153,7 +156,7 @@ resource "aws_lambda_function" "business_research_lambda" {
   environment {
     variables = {
       BACKEND_DOMAIN = "https://${var.domain}"
-      SERVICE_TOKEN = data.aws_secretsmanager_secret_version.service_user_token.secret_string
+      SERVICE_TOKEN  = data.aws_secretsmanager_secret_version.service_user_token.secret_string
     }
   }
   tags = {
