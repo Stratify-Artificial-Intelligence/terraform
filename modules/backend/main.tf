@@ -34,6 +34,10 @@ resource "aws_ecs_task_definition" "app" {
           value = var.environment
         },
         {
+          name      = "GENERAL_APP_DOMAIN"
+          valueFrom = var.domain
+        },
+        {
           name  = "SERVICES_CHAT_AI_MODEL_PROVIDER"
           value = var.external_services.CHAT_AI_MODEL_PROVIDER
         },
@@ -71,6 +75,10 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "PINECONE_REGION"
+          value = "us-east-1"
+        },
+        {
+          name  = "PINECONE_CLOUD"
           value = "aws"
         },
         {
@@ -80,12 +88,24 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_REGION"
           value = var.region
+        },
+        {
+          name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_REGION"
+          value = var.region
+        },
+        {
+          name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_ROLE_ARN"
+          value = var.eventbridge_scheduler_role_arn != null ? var.eventbridge_scheduler_role_arn : ""
+        },
+        {
+          name  = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_LAMBDA_FUNCTION_ARN"
+          value = var.eventbridge_lambda_function_arn != null ? var.eventbridge_lambda_function_arn : ""
         }
       ],
       secrets = [
         # ToDo (pduran): [S-249] Remove this secret and use the IAM role instead
         {
-          name      = "SECURITY_SERVICE_USER_TOKEN"
+          name      = "GENERAL_SERVICE_USER_TOKEN"
           valueFrom = aws_secretsmanager_secret.service_user_token.arn
         },
         {
@@ -148,6 +168,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "SERVICES_DEEP_RESEARCH_HANDLER_AWS_STEP_FUNCTION_SECRET_ACCESS_KEY"
           valueFrom = var.step_function_user_secret_access_key_arn
+        },
+        {
+          name      = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_ACCESS_KEY_ID"
+          valueFrom = var.eventbridge_user_access_key_id_arn
+        },
+        {
+          name      = "SERVICES_SCHEDULER_AWS_EVENTBRIDGE_SECRET_ACCESS_KEY"
+          valueFrom = var.eventbridge_user_secret_access_key_arn
         }
       ],
       logConfiguration = {
