@@ -68,6 +68,7 @@ resource "aws_iam_role_policy" "ecs_handle_scheduler_all" {
       {
         Action = [
           "scheduler:CreateSchedule",
+          "scheduler:UpdateSchedule",
           "scheduler:DeleteSchedule",
           "scheduler:GetSchedule"
         ],
