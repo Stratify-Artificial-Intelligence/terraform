@@ -22,6 +22,7 @@ resource "aws_iam_policy" "eventbridge_rule_policy" {
       {
         Action = [
           "scheduler:CreateSchedule",
+          "scheduler:UpdateSchedule",
           "scheduler:DeleteSchedule"
         ],
         Effect = "Allow",
